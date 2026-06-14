@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshBtn = document.getElementById('refresh-btn');
 
   const loadFeedbacks = async () => {
-
-    const response = await fetch('/api/feedbacks');
+    const response = await fetch('/api/feedbacks', {
+      credentials: 'include'
+    });
 
     if (!response.ok) {
       tbody.innerHTML = `<tr><td colspan="5" class="text-danger p-4">Unable to load feedbacks.</td></tr>`;
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateStatus = async (id, status) => {
     await fetch(`/api/feedbacks/${id}/status`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -53,6 +55,5 @@ document.addEventListener('DOMContentLoaded', () => {
       .replaceAll("'", '&#39;');
 
   refreshBtn.addEventListener('click', loadFeedbacks);
-
   loadFeedbacks();
 });
