@@ -1,26 +1,80 @@
 # Basalam Feedback Board
 
-Minimal Feedback Board (Go + PostgreSQL + Bootstrap).
+یک سیستم مینیمال و بهینه برای ثبت و پیگیری فیدبک‌ها، توسعه داده شده با Go و PostgreSQL.
 
-Run with Docker Compose:
+این پروژه به عنوان تمرین ورودی توسعه داده شده و تمرکز اصلی آن بر تحویل یک محصول کارآمد (End-to-End)، پرهیز از پیچیدگی‌های اضافه (Over-engineering) و رعایت محدودیت‌های زمانی بوده است.
+
+---
+
+## 🚀 راهنمای اجرای پروژه در سیستم لوکال
+
+ساده‌ترین روش برای اجرای پروژه، استفاده از داکر است (پروژه به صورت کامل کانتینرایز شده است).
+
+### روش اول: اجرا با Docker Compose (پیشنهادی)
+کافیست دستور زیر را در مسیر اصلی پروژه اجرا کنید:
 
 ```bash
 docker compose up --build
+
 ```
 
-The app will be available at http://localhost:8080 and the admin dashboard at http://localhost:8080/admin (use `admin`/`admin` by default).
+پس از اجرای موفق:
 
-Run locally (requires a running Postgres instance):
+* **بخش کاربر (ثبت فیدبک):** `http://localhost:8080`
+* **داشبورد مدیریت:** `http://localhost:8080/admin` (نام کاربری و رمز عبور پیش‌فرض: `admin` / `admin`)
+
+### روش دوم: اجرای لوکال (بدون داکر)
+
+در صورتی که می‌خواهید پروژه را مستقیماً با Go اجرا کنید، نیاز به یک دیتابیس PostgreSQL روشن دارید. متغیرهای محیطی زیر را تنظیم کرده و برنامه را اجرا کنید:
 
 ```bash
 export DATABASE_URL=postgres://postgres:postgres@localhost:5432/feedbacks?sslmode=disable
 export BASIC_AUTH_USER=admin
 export BASIC_AUTH_PASSWORD=admin
+
+# Build and run
 go build -o feedbackboard ./cmd
 ./feedbackboard
+
 ```
 
-Notes:
-- The app auto-creates the `feedbacks` table and the `pgcrypto` extension on startup.
-- Public endpoint: `POST /api/feedbacks` — returns `201 Created` on success.
-- Admin endpoints (Basic Auth protected): `GET /api/feedbacks`, `PATCH /api/feedbacks/{id}/status`.
+*(نکته: سیستم به صورت خودکار در زمان استارت‌آپ، تیبل `feedbacks` و اکستنشن `pgcrypto` را در صورت عدم وجود در دیتابیس می‌سازد).*
+
+---
+
+## 🧠 تصمیمات فنی و مدیریت ابهامات
+
+با توجه به درخواست تسک مبنی بر تمرکز روی کارکرد اصلی سیستم و دوری از مهندسی بیش از حد، تصمیمات زیر اتخاذ شد:
+
+1. **انتخاب Tech Stack:** - **بک‌اند:** از زبان Go استفاده شد تا علاوه بر پرفورمنس بالا، به دلیل داشتن کتابخانه‌های استاندارد قدرتمند، نیازی به فریم‌ورک‌های سنگین نباشد.
+* **فرانت‌اند:** از Vanilla JS (Fetch API) در کنار Bootstrap 5 استفاده شد. این ترکیب بدون نیاز به هیچ‌گونه Build Step (مثل Webpack یا Vite) یک رابط کاربری تمیز و ریسپانسیو را در سریع‌ترین زمان ممکن فراهم کرد.
+
+
+2. **دیتابیس و مدیریت Migrationها:**
+   به جای استفاده از ORMهای سنگین، از کوئری‌های خام (Raw SQL) استفاده شد. همچنین برای جلوگیری از پیچیدگی در اجرای لوکال، اسکریپت ساخت Tableها در خود کد Go تعبیه شده است تا نیازی به ابزارهای جانبی Migration نباشد (مدیریت ابهام در راه‌اندازی سریع).
+3. **معماری پروژه:**
+   ساختار پوشه‌بندی استاندارد Go رعایت شده است (`cmd`، `internal`، `ui`). با این حال لایه‌بندی‌ها به صورت حداقلی (Handlers & Repository) نگه داشته شدند تا در دام Over-engineering برای یک سیستم ساده با دو Endpoint نیفتیم.
+
+---
+
+## 🌟 امتیازهای ویژه (Bonus Features) پیاده‌سازی شده
+
+با وجود اختیاری بودن، موارد زیر جهت ارتقای کیفیت محصول به پروژه اضافه شدند:
+
+* **احراز هویت (Authentication):** پیاده‌سازی میان‌افزار (Middleware) HTTP Basic Auth برای محافظت از مسیرهای داشبورد ادمین و APIهای تغییر وضعیت.
+* **کانتینرایز کردن (Docker):** ایجاد `Dockerfile` و `docker-compose.yml` برای اجرای ایزوله دیتابیس و اپلیکیشن تنها با یک دستور.
+
+---
+
+## 📸 اسکرین‌شات‌های برنامه
+
+### ۱. فرم ثبت فیدبک (بخش کاربر)
+
+![feedback form](screenshots/feedback-form.png)
+![feedback submit alert](screenshots/feedback-submit-alert.png)
+
+### ۲. داشبورد ادمین (تغییر وضعیت‌ها)
+
+![admin basic auth](screenshots/admin-basic-auth.png)
+![feedback list](screenshots/feedback-list.png)
+![feedback actions](screenshots/feedback-actions.png)
