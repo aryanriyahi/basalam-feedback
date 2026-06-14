@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: feedbacks
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - feedbackboard_db:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://postgres:postgres@db:5432/feedbacks?sslmode=disable
+      BASIC_AUTH_USER: admin
+      BASIC_AUTH_PASSWORD: admin
+    ports:
+      - "8080:8080"
+
+volumes:
+  feedbackboard_db:
